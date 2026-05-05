@@ -16,7 +16,7 @@ BCLS is the release-note standard I use across BurntToasters apps. It keeps ever
 ## What BCLS Locks Down
 
 - The required downloads, signing, support, changes, carry-forward, and release-info section order.
-- The exact `## Changes in \`vX.Y.Z:\`` heading shape.
+- The exact `` ## Changes in `vX.Y.Z:` `` heading shape.
 - The canonical category vocabulary and bullet format.
 - Stack-specific callouts for Tauri V2, Electron, Flutter, and Microsoft Store releases.
 - The early-major hero persistence rule and security/manual-update language.
