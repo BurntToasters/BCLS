@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { useMemo, useState } from "react";
 
 type ReleaseType = "patch" | "minor" | "major" | "beta" | "security";

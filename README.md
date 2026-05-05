@@ -57,4 +57,9 @@ Local commands:
 
 ## License
 
-[CC0-1.0](LICENSE) — public-domain dedication. Use, fork, adapt, or relicense BCLS however you want; no attribution required (though it's appreciated).
+This repo is dual-licensed — see [`LICENSE`](LICENSE) for the full breakdown.
+
+- **Spec, prose, templates, examples** (`STANDARD.md`, `AGENTS.md`, `TEMPLATES/`, `EXAMPLES/`, `media/`, etc.) — [CC0 1.0](LICENSE-CC0). Public domain. Use, fork, adapt, or relicense however you want.
+- **Source code** (`scripts/`, `site/`) — [MPL-2.0](LICENSE-MPL-2.0). File-level copyleft with patent grant; combines fine with permissive or proprietary code at the project level.
+
+SPDX: `CC0-1.0 AND MPL-2.0`.

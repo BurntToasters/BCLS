@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import react from "@astrojs/react";
