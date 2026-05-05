@@ -57,24 +57,70 @@ Every release body uses these sections in this order. Optional sections are mark
 
 ## 3. Downloads Block
 
+The canonical form uses OS-icon column headers and **linkified asset cells** so users can click directly to download each binary. Placeholders (`<ORG>`, `<APP>`, `<TAG>`, `<MS_STORE_ID>`) are filled in per release.
+
 ```markdown
 # ⬇️ Downloads
 
-| Windows | macOS | Linux |
-| --- | --- | --- |
-| EXE: x64 / arm64 | Universal DMG | AppImage: x64 |
-|   | Universal ZIP | DEB: x64 |
-| See MSI note below |   | RPM: x64 |
-|   |   | Flatpak: x64 |
+| <img height="20" src="https://raw.githubusercontent.com/BurntToasters/bcls/main/media/windows.png" /> Windows | <img height="20" src="https://raw.githubusercontent.com/BurntToasters/bcls/main/media/mac.png" /> macOS | <img height="20" src="https://raw.githubusercontent.com/BurntToasters/bcls/main/media/linux.png" /> Linux |
+| :--- | :--- | :--- |
+| **EXE:** [x64](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-Win-x64.exe) / [arm64](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-Win-arm64.exe) | **[Universal DMG](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-MacOS-universal.dmg)** | **AppImage:** [x64](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-Linux-x86_64.AppImage) <!-- / [arm64](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-Linux-arm64.AppImage) --> |
+| <div align="center"><a href="https://apps.microsoft.com/detail/<MS_STORE_ID>?referrer=appbadge&mode=full"><img src="https://get.microsoft.com/images/en-us%20light.svg" width="150"/></a></div> | **[Universal ZIP](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-MacOS-universal.zip)** | **DEB:** [x64](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-Linux-amd64.deb) <!-- / [arm64](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-Linux-arm64.deb) --> |
+| *See MSI note below* | | **RPM:** [x64](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-Linux-x86_64.rpm) <!-- / [arm64](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-Linux-aarch64.rpm) --> |
+| | | **Flatpak:** [x64](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-Linux-x86_64.flatpak) <!-- / [arm64](https://github.com/<ORG>/<APP>/releases/download/<TAG>/<APP>-Linux-aarch64.flatpak) --> |
 ```
 
-Rules:
+**MUSTs:**
+
 - Always three columns in the order **Windows | macOS | Linux**.
-- Use `Universal` for fat binaries that ship both arches in one file.
-- Use slash separators for arch variants in a single cell: `EXE: x64 / arm64`.
-- If MSI builds exist for a stable release, put `See MSI note below` in the Windows column and add the MSI note callout (see §8).
 - Omit (leave blank) cells for unsupported platforms; do not write "N/A".
-- For Microsoft-Store-distributed apps (ROSI), include the Store badge above the table.
+- The column header text is exactly `Windows`, `macOS`, `Linux` (§11). The leading OS-icon `<img>` is part of the canonical header.
+
+**SHOULDs (linkification & layout):**
+
+- Stable releases SHOULD use linkified asset cells (above pattern) so users don't have to scroll the Assets dropdown.
+- Use `Universal` for fat binaries shipping both arches in one file.
+- For Microsoft-Store-distributed apps (ROSI), put the Store badge in the second-row Windows cell as shown above. Non-Store apps leave that cell blank (or keep the badge HTML inside an HTML comment as a discoverable scaffold).
+- If MSI builds exist for a stable release, put `*See MSI note below*` (italic) in the third-row Windows cell and add the MSI note callout (§8.1).
+- Beta releases MAY use the same linkified table, but MUST omit the MSI placeholder row (§7).
+
+### 3.1 Cell-Formatting Conventions
+
+| Cell type | Form |
+| --- | --- |
+| Single fat-binary asset | `**[Label](URL)**` — e.g. `**[Universal DMG](.../app-MacOS-universal.dmg)**` |
+| Multi-arch single format | `**Format:** [arch1](URL) / [arch2](URL)` — e.g. `**EXE:** [x64](...) / [arm64](...)` |
+| Arch not yet shipped | Keep the link inside an HTML comment so it's a one-line edit to enable later: `[x64](...) <!-- / [arm64](...) -->` |
+| MS Store badge | A single-cell `<div align="center"><a><img></a></div>` block as shown in the canonical example. |
+| MSI placeholder | `*See MSI note below*` (italic), pointing at the MSI callout in §8.1. |
+| Empty cell | Leave blank — no `N/A`, no em-dash. |
+
+### 3.2 URL & Asset-Naming Pattern
+
+Asset URLs follow GitHub's standard release-asset path:
+
+```
+https://github.com/<ORG>/<APP>/releases/download/<TAG>/<ASSET>
+```
+
+- `<TAG>` includes the leading `v` (e.g. `v2.1.2`, `v4.0.0`, `v2.1.0-beta.3`).
+- `<APP>` is the GitHub repo name and asset filename prefix.
+- `<ORG>` is the GitHub user/org (e.g. `BurntToasters`).
+
+Asset filename conventions used across the BurntToasters apps (BCLS doesn't mandate these — they're recorded for convenience; apps on different stacks MAY use a different naming scheme so long as it's consistent within the app):
+
+| Platform | Pattern | Example |
+| --- | --- | --- |
+| Windows EXE | `<APP>-Win-<arch>.exe` | `IYERIS-Win-x64.exe`, `IYERIS-Win-arm64.exe` |
+| Windows MSI | `<APP>-Win-<arch>.msi` | `IYERIS-Win-x64.msi` |
+| macOS DMG | `<APP>-MacOS-universal.dmg` | `IYERIS-MacOS-universal.dmg` |
+| macOS ZIP | `<APP>-MacOS-universal.zip` | `IYERIS-MacOS-universal.zip` |
+| Linux AppImage | `<APP>-Linux-<x86_64\|arm64>.AppImage` | `IYERIS-Linux-x86_64.AppImage` |
+| Linux DEB | `<APP>-Linux-<amd64\|arm64>.deb` | `IYERIS-Linux-amd64.deb` |
+| Linux RPM | `<APP>-Linux-<x86_64\|aarch64>.rpm` | `IYERIS-Linux-x86_64.rpm` |
+| Linux Flatpak | `<APP>-Linux-<x86_64\|aarch64>.flatpak` | `IYERIS-Linux-x86_64.flatpak` |
+
+> Asset filenames retain the legacy `MacOS` casing because they are tied to existing build pipelines and renaming would break update URLs. User-facing prose and column headers still use canonical `macOS` (§11).
 
 ## 4. Important Callout
 
@@ -375,11 +421,11 @@ BCLS assumes English-language release notes. Translations MAY be appended in col
 ```markdown
 # ⬇️ Downloads
 
-| Windows | macOS | Linux |
-| --- | --- | --- |
-| EXE: x64 / arm64 | Universal DMG | AppImage: x64 / arm64 |
-| Other: x64 / arm64 |   | DEB: x64 / arm64 |
-|   |   | RPM: x64 / arm64 |
+| <img height="20" src="https://raw.githubusercontent.com/BurntToasters/bcls/main/media/windows.png" /> Windows | <img height="20" src="https://raw.githubusercontent.com/BurntToasters/bcls/main/media/mac.png" /> macOS | <img height="20" src="https://raw.githubusercontent.com/BurntToasters/bcls/main/media/linux.png" /> Linux |
+| :--- | :--- | :--- |
+| **EXE:** [x64](https://github.com/BurntToasters/ROSI/releases/download/v4.0.8/ROSI-Win-x64.exe) / [arm64](https://github.com/BurntToasters/ROSI/releases/download/v4.0.8/ROSI-Win-arm64.exe) | **[Universal DMG](https://github.com/BurntToasters/ROSI/releases/download/v4.0.8/ROSI-MacOS-universal.dmg)** | **AppImage:** [x64](https://github.com/BurntToasters/ROSI/releases/download/v4.0.8/ROSI-Linux-x86_64.AppImage) / [arm64](https://github.com/BurntToasters/ROSI/releases/download/v4.0.8/ROSI-Linux-arm64.AppImage) |
+| <div align="center"><a href="https://apps.microsoft.com/detail/9pkgd6lkcl5j?referrer=appbadge&mode=full"><img src="https://get.microsoft.com/images/en-us%20light.svg" width="150"/></a></div> | **[Universal ZIP](https://github.com/BurntToasters/ROSI/releases/download/v4.0.8/ROSI-MacOS-universal.zip)** | **DEB:** [x64](https://github.com/BurntToasters/ROSI/releases/download/v4.0.8/ROSI-Linux-amd64.deb) / [arm64](https://github.com/BurntToasters/ROSI/releases/download/v4.0.8/ROSI-Linux-arm64.deb) |
+| | | **RPM:** [x64](https://github.com/BurntToasters/ROSI/releases/download/v4.0.8/ROSI-Linux-x86_64.rpm) / [arm64](https://github.com/BurntToasters/ROSI/releases/download/v4.0.8/ROSI-Linux-aarch64.rpm) |
 
 ### ℹ️ Enjoying ROSI? Consider [❤️ Supporting Me! ❤️](https://rosie.run/support)
 

@@ -9,12 +9,14 @@ If the **Synced against** version above doesn't match the `Spec version` at the 
 ## Inputs you need before writing
 
 - App name (e.g. `IYERIS`, `Dacx`, `ROSI`, `S3-Sidekick`, `Zinnia`).
+- GitHub org/user (e.g. `BurntToasters`) — for asset URLs.
 - Stack (`Tauri V2`, `Electron`, `Flutter`).
 - New version tag (e.g. `v2.1.3`).
 - Release type: `patch` | `minor` | `major` | `beta` | `security`.
 - List of changes (with rough categories if possible).
 - Last "milestone" version on the same minor/major line (for the carry-forward rule).
 - Whether MSI builds are included (stable Tauri/Electron only).
+- MS Store listing ID (only for Store-distributed apps; ROSI uses one).
 
 If anything is missing, ask before drafting.
 
@@ -30,7 +32,7 @@ If anything is missing, ask before drafting.
 
 ## Required body skeleton (in this order)
 
-1. `# ⬇️ Downloads` + 3-column OS table (`Windows | macOS | Linux`).
+1. `# ⬇️ Downloads` + 3-column OS table (`Windows | macOS | Linux`) with linkified asset cells (STANDARD §3 / §3.1 / §3.2).
 2. `> [!IMPORTANT]` callout — signing info, arch availability, stability disclaimer if applicable.
 3. `### ℹ️ Enjoying <App>? Consider [❤️ Supporting Me! ❤️](https://rosie.run/support)`
 4. *(major releases only, plus all `vN.0.x` patches until `vN.1.0` ships)* Hero `# Welcome to <App> vN!!!` + story sections.

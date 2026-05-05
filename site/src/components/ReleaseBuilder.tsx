@@ -188,16 +188,53 @@ const importantCallout = (stack: Stack) => {
   return lines.join("\n");
 };
 
-const downloadsTable = (includeMsi: boolean) => [
-  "# ⬇️ Downloads",
-  "",
-  "| Windows | macOS | Linux |",
-  "| --- | --- | --- |",
-  "| EXE: x64 / arm64 | Universal DMG | AppImage: x64 |",
-  "|   | Universal ZIP | DEB: x64 |",
-  `| ${includeMsi ? "See MSI note below" : " "} |   | RPM: x64 |`,
-  "|   |   | Flatpak: x64 |"
-].join("\n");
+const ASSET_BASE = (org: string, app: string, tag: string) =>
+  `https://github.com/${org}/${app}/releases/download/${tag}`;
+
+const downloadsTable = (
+  includeMsi: boolean,
+  appName: string,
+  org: string,
+  tag: string,
+  msStoreId: string
+) => {
+  const ORG = (org || "<ORG>").trim() || "<ORG>";
+  const APP = (appName || "<APP>").trim() || "<APP>";
+  const TAG = (tag || "<TAG>").trim() || "<TAG>";
+  const STORE = (msStoreId || "").trim();
+  const base = ASSET_BASE(ORG, APP, TAG);
+
+  const winRow1 = `**EXE:** [x64](${base}/${APP}-Win-x64.exe) / [arm64](${base}/${APP}-Win-arm64.exe)`;
+  const winRow2 = STORE
+    ? `<div align="center"><a href="https://apps.microsoft.com/detail/${STORE}?referrer=appbadge&mode=full"><img src="https://get.microsoft.com/images/en-us%20light.svg" width="150"/></a></div>`
+    : "";
+  const winRow3 = includeMsi ? "*See MSI note below*" : "";
+
+  const macRow1 = `**[Universal DMG](${base}/${APP}-MacOS-universal.dmg)**`;
+  const macRow2 = `**[Universal ZIP](${base}/${APP}-MacOS-universal.zip)**`;
+
+  const linRow1 = `**AppImage:** [x64](${base}/${APP}-Linux-x86_64.AppImage) <!-- / [arm64](${base}/${APP}-Linux-arm64.AppImage) -->`;
+  const linRow2 = `**DEB:** [x64](${base}/${APP}-Linux-amd64.deb) <!-- / [arm64](${base}/${APP}-Linux-arm64.deb) -->`;
+  const linRow3 = `**RPM:** [x64](${base}/${APP}-Linux-x86_64.rpm) <!-- / [arm64](${base}/${APP}-Linux-aarch64.rpm) -->`;
+  const linRow4 = `**Flatpak:** [x64](${base}/${APP}-Linux-x86_64.flatpak) <!-- / [arm64](${base}/${APP}-Linux-aarch64.flatpak) -->`;
+
+  const header =
+    '| <img height="20" src="https://raw.githubusercontent.com/BurntToasters/bcls/main/media/windows.png" /> Windows | <img height="20" src="https://raw.githubusercontent.com/BurntToasters/bcls/main/media/mac.png" /> macOS | <img height="20" src="https://raw.githubusercontent.com/BurntToasters/bcls/main/media/linux.png" /> Linux |';
+
+  const rows = [
+    `| ${winRow1} | ${macRow1} | ${linRow1} |`,
+    `| ${winRow2} | ${macRow2} | ${linRow2} |`
+  ];
+  if (includeMsi) {
+    rows.push(`| ${winRow3} | | ${linRow3} |`);
+    rows.push(`| | | ${linRow4} |`);
+  } else {
+    rows.push(`| | | ${linRow3} |`);
+    rows.push(`| | | ${linRow4} |`);
+  }
+
+  return ["# ⬇️ Downloads", "", header, "| :--- | :--- | :--- |", ...rows].join("\n");
+};
 
 const formatChange = (change: Change) => {
   const category = change.category === "NEW - Feature" ? `NEW - ${change.featureName || "Feature Name"}` : change.category;
@@ -275,10 +312,12 @@ const validate = (markdown: string): Validation[] => {
 
 export default function ReleaseBuilder() {
   const [appName, setAppName] = useState("IYERIS");
+  const [org, setOrg] = useState("BurntToasters");
   const [stack, setStack] = useState<Stack>("Tauri V2");
   const [version, setVersion] = useState("v1.0.0");
   const [releaseType, setReleaseType] = useState<ReleaseType>("patch");
   const [includeMsi, setIncludeMsi] = useState(true);
+  const [msStoreId, setMsStoreId] = useState("");
   const [changes, setChanges] = useState<Change[]>(initialChanges);
   const [carryForward, setCarryForward] = useState("");
   const [securityText, setSecurityText] = useState("I'm sorry for the inconvenience. Please download and install this release manually so future updates can continue normally.");
@@ -294,7 +333,7 @@ export default function ReleaseBuilder() {
     if (releaseType === "beta") {
       sections.push("> [!NOTE]\n> 🅱️ This is a Beta build.");
     }
-    sections.push(downloadsTable(effectiveMsi));
+    sections.push(downloadsTable(effectiveMsi, appName, org, normalized, msStoreId));
     sections.push(importantCallout(stack));
     sections.push(`### ℹ️ Enjoying ${appName || "<App>"}? Consider [❤️ Supporting Me! ❤️](https://rosie.run/support)`);
     if (releaseType === "major") {
@@ -329,7 +368,7 @@ export default function ReleaseBuilder() {
     }
     sections.push(releaseInfo);
     return sections.join("\n\n");
-  }, [appName, stack, normalized, releaseType, effectiveMsi, changes, carryForward, securityText, manualSteps]);
+  }, [appName, org, stack, normalized, releaseType, effectiveMsi, msStoreId, changes, carryForward, securityText, manualSteps]);
 
   const validations = useMemo(() => validate(markdown), [markdown]);
   const preview = useMemo(() => renderMarkdown(markdown), [markdown]);
@@ -365,8 +404,16 @@ export default function ReleaseBuilder() {
             <input className="builder-input" value={appName} onChange={(event) => setAppName(event.target.value)} />
           </label>
           <label className="builder-field">
+            <span className="builder-label">GitHub org/user</span>
+            <input className="builder-input" value={org} onChange={(event) => setOrg(event.target.value)} placeholder="BurntToasters" />
+          </label>
+          <label className="builder-field">
             <span className="builder-label">Version tag</span>
             <input className="builder-input" value={version} onChange={(event) => setVersion(event.target.value)} />
+          </label>
+          <label className="builder-field">
+            <span className="builder-label">MS Store ID (optional)</span>
+            <input className="builder-input" value={msStoreId} onChange={(event) => setMsStoreId(event.target.value)} placeholder="9pkgd6lkcl5j" />
           </label>
           <label className="builder-field">
             <span className="builder-label">Stack</span>
