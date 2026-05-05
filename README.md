@@ -18,6 +18,7 @@ It exists so that:
 | [`AGENTS.md`](AGENTS.md) | Condensed checklist + DO/DON'T table tuned for AI agents drafting release notes. |
 | [`TEMPLATES/`](TEMPLATES/) | Copy-paste markdown skeletons — `patch.md`, `minor.md`, `major.md`, `beta.md`, `security.md`, plus reusable `_partials/`. |
 | [`EXAMPLES/`](EXAMPLES/) | Annotated real release notes from my apps, mapped section-by-section to the spec. |
+| [`site/`](site/) | Astro + Starlight documentation site and guided release-note builder. |
 | [`CHANGELOG.md`](CHANGELOG.md) | What changed between spec versions. |
 | [`scripts/lint.mjs`](scripts/lint.mjs) | Minimal regex linter for the machine-checkable MUST rules. Run `node scripts/lint.mjs <file>`. |
 
@@ -37,6 +38,22 @@ It exists so that:
 - **Tone:** first-person, casual, smileys allowed in moderation.
 
 Full details and rationale live in [`STANDARD.md`](STANDARD.md).
+
+## Website
+
+The documentation site lives in [`site/`](site/) and is built with Astro + Starlight. Root markdown files remain the source of truth; the site syncs them into generated docs pages before each build.
+
+For Cloudflare Pages:
+
+- Build command: `cd site && npm ci && npm run build`
+- Build output directory: `site/dist`
+
+Local commands:
+
+- `cd site && npm install`
+- `npm run dev`
+- `npm run build`
+- `npm run preview`
 
 ## License
 

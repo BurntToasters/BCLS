@@ -1,0 +1,22 @@
+{
+  "name": "bcls-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run sync-content && astro dev",
+    "build": "npm run sync-content && astro build",
+    "preview": "astro preview",
+    "sync-content": "node scripts/sync-content.mjs"
+  },
+  "dependencies": {
+    "@astrojs/react": "^5.0.4",
+    "@astrojs/starlight": "^0.38.4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "astro": "^6.2.2",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "typescript": "^6.0.3"
+  }
+}
