@@ -29,11 +29,11 @@ export default defineConfig({
         },
         {
           label: "Templates",
-          autogenerate: { directory: "generated/templates" }
+          items: [{ autogenerate: { directory: "generated/templates" } }]
         },
         {
           label: "Examples",
-          autogenerate: { directory: "generated/examples" }
+          items: [{ autogenerate: { directory: "generated/examples" } }]
         }
       ]
     }),
