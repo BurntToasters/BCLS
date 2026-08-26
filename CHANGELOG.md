@@ -17,6 +17,33 @@ Downstream apps SHOULD pin to the **MAJOR** of the spec they conform to.
 
 ---
 
+## [1.1.0] — 2026-08-26
+
+Additive MINOR. Existing kind `binary` GitHub release notes remain conformant.
+
+### Added
+- §0.1 **Kinds** — `binary` (default), `web`, `commit`, `docs`. Declare with `<!-- bcls:kind … -->` or `node scripts/lint.mjs --kind=…`.
+- §5.4 category **`Docs`** — documentation / copy / docs-site content.
+- §12 **Web / docs-site** row — no `.sig`, no MSI, no updater, omit §9 Release Info.
+- §15 **Kind `web`** — GitHub releases with no binaries. No Downloads table, no signing callout, no MSI, no Release Info. Body starts at the support link (SHOULD). Same `## Changes in` + carry-forward rules. Security wording tells users to reload the site.
+- §16 **Kind `commit`** — BCLS category subjects (`Category: Description.`), not Conventional Commits. Imperative, ≤72 chars.
+- §17 **Kind `docs`** — README / CONTRIBUTING / docs-site writing standard.
+- Appendix A.2 web section-order cheat sheet.
+- Templates: `web-patch.md`, `web-minor.md`, `web-major.md`, `web-beta.md`, `web-security.md`, `commit.md`, `docs-readme.md`, `docs-contributing.md`.
+- Examples: `web-site-patch.md`, `commit-samples.md`, `docs-readme.md`.
+- Lint kinds (`binary` / `web` / `commit` / `docs`): W001–W002, C001–C004.
+- Release builder: binary | web kind toggle.
+
+### Changed
+- Scope line covers release notes, commit subjects, and documentation — not only app GitHub releases.
+- Untagged-MUST sentence: §§1–6, §9, §11 remain MUST for `binary`; `web` / `commit` / `docs` MUSTs are tagged in §15–§17.
+
+### Repo
+- `AGENTS.md` synced to `v1.1.0` with kind dispatch and web / commit / docs workflows.
+- `.github/copilot-instructions.md` aligned to §16 (`Typescript`, `Docs`).
+
+---
+
 ## [1.0.0] — 2026-05-05
 
 Initial public release of the spec.

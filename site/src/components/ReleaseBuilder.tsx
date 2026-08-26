@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 
 type ReleaseType = "patch" | "minor" | "major" | "beta" | "security";
 type Stack = "Tauri V2" | "Electron" | "Flutter" | "Other";
+type Kind = "binary" | "web";
 
 type Change = {
   id: number;
@@ -30,6 +31,7 @@ const categories = [
   "Updater",
   "Security",
   "Licenses",
+  "Docs",
   "Ver",
   "Windows",
   "Linux",
@@ -272,7 +274,7 @@ const releaseInfo = [
   "  for simplicity."
 ].join("\n");
 
-const validate = (markdown: string): Validation[] => {
+const validate = (markdown: string, kind: Kind): Validation[] => {
   const violations: Validation[] = [];
   const lines = markdown.split("\n");
   lines.forEach((line, index) => {
@@ -302,16 +304,26 @@ const validate = (markdown: string): Validation[] => {
       violations.push({ id: "BCLS", line: lineNumber, message: "Use 'macOS', not 'MacOS'." });
     }
   });
-  if (!/^#\s+⬇️\s+Downloads\s*$/m.test(markdown)) {
-    violations.push({ id: "M004", message: "Missing '# ⬇️ Downloads' section." });
-  }
-  if (!/^##\s+ℹ️\s+Release Info\s*$/m.test(markdown)) {
-    violations.push({ id: "M005", message: "Missing '## ℹ️ Release Info' section." });
+  if (kind === "web") {
+    if (/^#\s+⬇️\s+Downloads\s*$/m.test(markdown)) {
+      violations.push({ id: "W001", message: "Kind web MUST NOT contain '# ⬇️ Downloads'." });
+    }
+    if (/^##\s+ℹ️\s+Release Info\s*$/m.test(markdown)) {
+      violations.push({ id: "W002", message: "Kind web MUST NOT contain '## ℹ️ Release Info'." });
+    }
+  } else {
+    if (!/^#\s+⬇️\s+Downloads\s*$/m.test(markdown)) {
+      violations.push({ id: "M004", message: "Missing '# ⬇️ Downloads' section." });
+    }
+    if (!/^##\s+ℹ️\s+Release Info\s*$/m.test(markdown)) {
+      violations.push({ id: "M005", message: "Missing '## ℹ️ Release Info' section." });
+    }
   }
   return violations;
 };
 
 export default function ReleaseBuilder() {
+  const [kind, setKind] = useState<Kind>("binary");
   const [appName, setAppName] = useState("IYERIS");
   const [org, setOrg] = useState("BurntToasters");
   const [stack, setStack] = useState<Stack>("Tauri V2");
@@ -325,7 +337,8 @@ export default function ReleaseBuilder() {
   const [manualSteps, setManualSteps] = useState("Download the installer for your platform.\nRun the installer manually.\nOpen the app again after installation.");
   const [copyStatus, setCopyStatus] = useState("");
 
-  const canShowMsi = stackCanMsi(stack, releaseType);
+  const isWeb = kind === "web";
+  const canShowMsi = !isWeb && stackCanMsi(stack, releaseType);
   const normalized = normalizeVersion(version);
   const effectiveMsi = canShowMsi && includeMsi;
 
@@ -334,8 +347,10 @@ export default function ReleaseBuilder() {
     if (releaseType === "beta") {
       sections.push("> [!NOTE]\n> 🅱️ This is a Beta build.");
     }
-    sections.push(downloadsTable(effectiveMsi, appName, org, normalized, msStoreId));
-    sections.push(importantCallout(stack));
+    if (!isWeb) {
+      sections.push(downloadsTable(effectiveMsi, appName, org, normalized, msStoreId));
+      sections.push(importantCallout(stack));
+    }
     sections.push(`### ℹ️ Enjoying ${appName || "<App>"}? Consider [❤️ Supporting Me! ❤️](https://rosie.run/support)`);
     if (releaseType === "major") {
       const major = normalized.match(/^v(\d+)/)?.[1] || "N";
@@ -367,11 +382,13 @@ export default function ReleaseBuilder() {
     if (effectiveMsi) {
       sections.push(msiNote);
     }
-    sections.push(releaseInfo);
+    if (!isWeb) {
+      sections.push(releaseInfo);
+    }
     return sections.join("\n\n");
-  }, [appName, org, stack, normalized, releaseType, effectiveMsi, msStoreId, changes, carryForward, securityText, manualSteps]);
+  }, [isWeb, appName, org, stack, normalized, releaseType, effectiveMsi, msStoreId, changes, carryForward, securityText, manualSteps]);
 
-  const validations = useMemo(() => validate(markdown), [markdown]);
+  const validations = useMemo(() => validate(markdown, kind), [markdown, kind]);
   const preview = useMemo(() => renderMarkdown(markdown), [markdown]);
 
   const updateChange = (id: number, patch: Partial<Change>) => {
@@ -401,30 +418,54 @@ export default function ReleaseBuilder() {
         <h2>Guided Composer</h2>
         <div className="builder-two">
           <label className="builder-field">
-            <span className="builder-label">App name</span>
-            <input className="builder-input" value={appName} onChange={(event) => setAppName(event.target.value)} />
+            <span className="builder-label">Kind</span>
+            <select
+              className="builder-select"
+              value={kind}
+              onChange={(event) => {
+                const next = event.target.value as Kind;
+                setKind(next);
+                if (next === "web") {
+                  setSecurityText("I'm sorry for the inconvenience. Reload the site (a hard refresh is enough); you do not need to download anything.");
+                  setManualSteps("Hard-refresh the site.\nConfirm you are on the new version.");
+                }
+              }}
+            >
+              <option value="binary">binary (installers)</option>
+              <option value="web">web (no binaries)</option>
+            </select>
           </label>
           <label className="builder-field">
-            <span className="builder-label">GitHub org/user</span>
-            <input className="builder-input" value={org} onChange={(event) => setOrg(event.target.value)} placeholder="BurntToasters" />
+            <span className="builder-label">{isWeb ? "Site / project name" : "App name"}</span>
+            <input className="builder-input" value={appName} onChange={(event) => setAppName(event.target.value)} />
           </label>
+          {!isWeb && (
+            <label className="builder-field">
+              <span className="builder-label">GitHub org/user</span>
+              <input className="builder-input" value={org} onChange={(event) => setOrg(event.target.value)} placeholder="BurntToasters" />
+            </label>
+          )}
           <label className="builder-field">
             <span className="builder-label">Version tag</span>
             <input className="builder-input" value={version} onChange={(event) => setVersion(event.target.value)} />
           </label>
-          <label className="builder-field">
-            <span className="builder-label">MS Store ID (optional)</span>
-            <input className="builder-input" value={msStoreId} onChange={(event) => setMsStoreId(event.target.value)} placeholder="9pkgd6lkcl5j" />
-          </label>
-          <label className="builder-field">
-            <span className="builder-label">Stack</span>
-            <select className="builder-select" value={stack} onChange={(event) => setStack(event.target.value as Stack)}>
-              <option>Tauri V2</option>
-              <option>Electron</option>
-              <option>Flutter</option>
-              <option>Other</option>
-            </select>
-          </label>
+          {!isWeb && (
+            <label className="builder-field">
+              <span className="builder-label">MS Store ID (optional)</span>
+              <input className="builder-input" value={msStoreId} onChange={(event) => setMsStoreId(event.target.value)} placeholder="9pkgd6lkcl5j" />
+            </label>
+          )}
+          {!isWeb && (
+            <label className="builder-field">
+              <span className="builder-label">Stack</span>
+              <select className="builder-select" value={stack} onChange={(event) => setStack(event.target.value as Stack)}>
+                <option>Tauri V2</option>
+                <option>Electron</option>
+                <option>Flutter</option>
+                <option>Other</option>
+              </select>
+            </label>
+          )}
           <label className="builder-field">
             <span className="builder-label">Release type</span>
             <select className="builder-select" value={releaseType} onChange={(event) => setReleaseType(event.target.value as ReleaseType)}>
@@ -452,7 +493,7 @@ export default function ReleaseBuilder() {
               <textarea className="builder-textarea" value={securityText} onChange={(event) => setSecurityText(event.target.value)} />
             </label>
             <label className="builder-field">
-              <span className="builder-label">Manual install steps</span>
+              <span className="builder-label">{isWeb ? "Reload steps" : "Manual install steps"}</span>
               <textarea className="builder-textarea" value={manualSteps} onChange={(event) => setManualSteps(event.target.value)} />
             </label>
           </div>
