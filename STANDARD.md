@@ -1,13 +1,13 @@
 # BCLS — BurntToasters Changelog Standard
 
-> **Spec version:** `v1.0.0`
+> **Spec version:** `v1.1.0`
 > **Status:** Stable
-> **Scope:** GitHub release notes for all BurntToasters apps (IYERIS, Dacx, ROSI, S3-Sidekick, Zinnia, and future projects).
+> **Scope:** Release notes, commit subjects, and documentation across BurntToasters projects (IYERIS, Dacx, ROSI, S3-Sidekick, Zinnia, websites, and future work).
 > **Changelog:** [CHANGELOG.md](CHANGELOG.md)
 
-This document is the canonical specification for how release notes are written in BurntToasters repositories. It is written to be unambiguous enough that an AI agent given only this file plus a list of changes can produce notes indistinguishable from hand-written ones.
+This document is the canonical specification for how BurntToasters writing is shaped: GitHub release bodies (apps with installers, and sites with none), git commit subjects, and README / CONTRIBUTING / docs-site pages. It is written to be unambiguous enough that an AI agent given only this file plus a list of changes can produce notes indistinguishable from hand-written ones.
 
-If you're an agent: also read [AGENTS.md](AGENTS.md) for a condensed checklist.
+If you're an agent: also read [AGENTS.md](AGENTS.md) for a condensed checklist. Kind dispatch lives there and in §0.1 below.
 
 ---
 
@@ -19,7 +19,26 @@ The key words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** in
 - **SHOULD / SHOULD NOT** — strong recommendations. Deviate only with a reason worth writing down.
 - **MAY** — optional; pick what fits the release.
 
-Where a rule below isn't tagged, treat it as MUST if it's in §§1–6, §9, §11; SHOULD otherwise. The lint script in [`scripts/lint.mjs`](scripts/lint.mjs) checks the machine-checkable MUSTs.
+Where a rule below isn't tagged, treat it as MUST if it's in §§1–6, §9, §11 (**kind `binary`**); SHOULD otherwise. Kind `web` / `commit` / `docs` MUSTs are those tagged in §15–§17. The lint script in [`scripts/lint.mjs`](scripts/lint.mjs) checks the machine-checkable MUSTs for the active kind.
+
+### 0.1 Kinds
+
+Every BCLS artifact is one of four **kinds**. Kind `binary` is the default and is what §§1–14 describe. Kinds added in `v1.1.0` are additive — they do not change what a conformant `binary` note looks like.
+
+| Kind | Governs | How to declare |
+| --- | --- | --- |
+| `binary` | GitHub release bodies that ship installers | Default. No pragma required. |
+| `web` | GitHub release bodies with **no binaries** (websites, docs sites) | `<!-- bcls:kind web -->` at the top of the draft (templates / examples). |
+| `commit` | Git commit **subject** lines | `<!-- bcls:kind commit -->` in example files; `--kind=commit` for lint. |
+| `docs` | README, CONTRIBUTING, and docs-site pages | `<!-- bcls:kind docs -->` in templates / examples. |
+
+If kind is unclear, **ask**. Do not guess. Agents default to `binary` only when the task is clearly a GitHub release for an app that ships binaries.
+
+**Shared across kinds** (cite, don't duplicate): the category vocabulary (§5.4), casing & formatting (§11), and the no-marketing / no-PR-number don'ts in §13. **Voice splits by kind** — first-person casual is for release notes (`binary` / `web`) and for the "what this is" parts of `docs`. Commit subjects use imperative present tense (§16). Do **not** use Conventional Commits (`feat:`, `fix:`).
+
+Lint takes `--kind=binary|web|commit|docs` (CLI wins). Else it reads `<!-- bcls:kind … -->`. Else it assumes `binary`.
+
+Sections §§1–14 apply to kind `binary`. Where a rule also applies to `web`, the section says so. New kinds do not renumber those sections.
 
 ### Pinning a spec version
 
@@ -27,9 +46,11 @@ Downstream apps MAY note conformance like this in their own contributor docs:
 
 > Release notes for this app conform to BCLS `v1.x`.
 
-Use the **MAJOR** of the spec — minor bumps are additive and won't invalidate prior notes.
+Repos that also follow commit / docs kinds MAY say so in `CONTRIBUTING.md`. Use the **MAJOR** of the spec — minor bumps are additive and won't invalidate prior notes.
 
 ## 1. Tagging & Versioning
+
+*Applies to kinds `binary` and `web`.*
 
 - **Tag format:** `vMAJOR.MINOR.PATCH` (e.g. `v2.1.2`, `v0.6.3`).
 - **Pre-releases:** `vMAJOR.MINOR.PATCH-beta.N` (e.g. `v2.1.0-beta.3`). RC builds reuse the beta channel and are marked in the title (`Beta 3 (RC2)`).
@@ -43,7 +64,9 @@ Use the **MAJOR** of the spec — minor bumps are additive and won't invalidate 
 
 ## 2. Top-of-Body Structure (Required Order)
 
-Every release body uses these sections in this order. Optional sections are marked.
+*Applies to kind `binary`. Kind `web` uses §15 instead.*
+
+Every `binary` release body uses these sections in this order. Optional sections are marked.
 
 1. **Downloads block** — `# ⬇️ Downloads` heading + OS table (see §3).
 2. **Important callout** — GitHub `> [!IMPORTANT]` / `Important` block with signing/asset notes (see §4).
@@ -56,6 +79,8 @@ Every release body uses these sections in this order. Optional sections are mark
 9. **Release Info** — `## ℹ️ Release Info` with GPG, code signing, legacy-binary notes (see §9).
 
 ## 3. Downloads Block
+
+*Applies to kind `binary`. Kind `web` MUST NOT include this block (§15).*
 
 The canonical form uses OS-icon column headers and **linkified asset cells** so users can click directly to download each binary. Placeholders (`<ORG>`, `<APP>`, `<TAG>`, `<MS_STORE_ID>`) are filled in per release.
 
@@ -124,6 +149,8 @@ Asset filename conventions used across the BurntToasters apps (BCLS doesn't mand
 
 ## 4. Important Callout
 
+*Applies to kind `binary`. Kind `web` MUST NOT include signing / arch `> [!IMPORTANT]` blocks (§15).*
+
 Use a GitHub `Important` callout immediately under the downloads table. Required content varies by stack:
 
 **Tauri V2 apps (IYERIS, Zinnia, S3-Sidekick, ROSI):**
@@ -144,6 +171,8 @@ Use a GitHub `Important` callout immediately under the downloads table. Required
 > This app is currently unstable. Bugs, issues, and rough edges are expected.
 
 ## 5. The `Changes in` Section
+
+*Applies to kinds `binary` and `web`.*
 
 ### 5.1 Heading
 
@@ -209,6 +238,7 @@ The table below is the **closed core list** for BCLS. Notes MUST use a category 
 | `Ver` | Version bumps without functional changes (typical for `-beta.1` builds). |
 | `macOS`, `Windows`, `Linux` | OS-specific fixes. The historical category form `MacOS` is non-conformant; new notes MUST use `macOS` (see §11). |
 | `Misc` | Catch-all bucket; sub-bullets for grouped small items. The uppercase form `MISC` seen in older notes is non-conformant; new notes MUST use `Misc`. |
+| `Docs` | Documentation / copy / docs-site content (not UI chrome — that is `UI` or `Codebase`). Recurs on `web` releases and `commit` subjects. |
 | `NEW - <Feature>` | A discrete new feature. The feature name is a noun phrase. |
 
 If a new category recurs across more than one app, propose adding it to this table via a spec MINOR bump (see [CHANGELOG.md](CHANGELOG.md)).
@@ -224,6 +254,8 @@ If a new category recurs across more than one app, propose adding it to this tab
 - `PKG` is uppercase (acronym). The descriptive word is `packages` (lowercase). Variants in older notes (`Updated Packages.`, `Updated packges.`) are typos / drift, not house style.
 
 ## 6. Carry-Forward Rule
+
+*Applies to kinds `binary` and `web`.*
 
 The goal of carry-forward is to give a user landing on any release enough recent context to understand what they're getting, without bloating the body. The canonical shape is:
 
@@ -247,7 +279,7 @@ Order: newest version first, descending.
 
 ### 6.1 The `Full vN changelog` Section
 
-When older entries get truncated by the rule above, include a single `## Click below for the full \`vN\` Changelog` section near the bottom of the body (above §9 Release Info), containing one collapsible `<details>` block that links to a long-form per-major changelog body — typically a Gist, a `CHANGELOG.md` in the app repo, or a release tagged for the purpose.
+When older entries get truncated by the rule above, include a single `## Click below for the full \`vN\` Changelog` section near the bottom of the body (for kind `binary`, above §9 Release Info; for kind `web`, this is the last typical block — there is no §9 footer), containing one collapsible `<details>` block that links to a long-form per-major changelog body — typically a Gist, a `CHANGELOG.md` in the app repo, or a release tagged for the purpose.
 
 ```markdown
 ## Click below for the full `v4` Changelog
@@ -272,6 +304,8 @@ Release bodies MUST NOT include a publication date in the title or in any headin
 
 ## 7. Beta / RC Conventions
 
+*Applies to kinds `binary` and `web`. MSI language applies to `binary` only.*
+
 - Title: `2.1.0 Beta 1`, `2.1.0 Beta 2`, `2.1.0 Beta 3 (RC2)`.
 - Mark as GitHub Pre-release.
 - Add the beta callout at the very top of the body:
@@ -287,10 +321,12 @@ Release bodies MUST NOT include a publication date in the title or in any headin
   - **Ver:** Bumped version to `vX.Y.Z`.
   - **PKG:** Updated packages.
   ```
-- Betas do **not** ship MSI builds. State this in the MSI note (§8).
+- Kind `binary` betas do **not** ship MSI builds. State this in the MSI note (§8.1). Kind `web` MUST NOT mention MSI.
 - **Carry-forward for betas:** §6's stable-release chain doesn't apply directly. A beta body SHOULD include `## Changes in` for the current beta, the immediately previous beta on the same target version (if any), and the most recent stable release that the beta line is iterating from. Older betas of the same target MAY be linked from a Full vN changelog block, or omitted once they're irrelevant to the next stable.
 
 ## 8. Special Callouts (Optional)
+
+*§8.1 applies to kind `binary` only. §8.2 applies to `binary` and `web`. §8.3 is for `binary`; kind `web` uses the reload wording in §15.*
 
 ### 8.1 MSI / Enterprise
 
@@ -329,7 +365,7 @@ Major releases (e.g., `v2.0.0`, `v4.0.0`) add a hero block above the changes sec
 
 #### 8.2.1 Hero Persistence Across the `vN.0.x` Patch Line
 
-The hero block from `vN.0.0` SHOULD be carried forward unchanged in every `vN.0.x` patch body, sitting between the support link (item 3 of §2) and the `## Changes in` section. This way users landing on a recent patch still get the major launch story.
+The hero block from `vN.0.0` SHOULD be carried forward unchanged in every `vN.0.x` patch body, sitting between the support link and the `## Changes in` section (item 3 of §2 for `binary`; item 2 of §15 for `web`). This way users landing on a recent patch still get the major launch story.
 
 The hero MUST be removed once `vN.1.0` ships — by then the major has settled in and the hero becomes noise. From `vN.1.0` onward the carry-forward chain (§6) and the Full vN changelog link (§6.1) carry the historical context instead.
 
@@ -342,6 +378,8 @@ For releases requiring a manual download (key rotations, EOL transitions, etc.):
 - Apologetic paragraph explaining the cause.
 
 ## 9. Release Info Footer
+
+*Applies to kind `binary`. Kind `web` MUST NOT include this footer (§15).*
 
 ```markdown
 ## ℹ️ Release Info
@@ -360,6 +398,8 @@ For releases requiring a manual download (key rotations, EOL transitions, etc.):
 
 ## 10. Tone & Voice
 
+*Applies to kinds `binary` and `web` (release-note prose). Kind `commit` uses §16. Kind `docs` uses §17.*
+
 - **First person, casual.** "I", "me", "my".
 - **Smileys allowed** in moderation: `:)`, `:P`, `❤️`.
 - **Apologize when warranted.** Security incidents, manual-update inconveniences, removed features.
@@ -368,6 +408,8 @@ For releases requiring a manual download (key rotations, EOL transitions, etc.):
 - **Use "Added"** for new things, **"Updated"** for existing things, **"Removed"** for deletions.
 
 ## 11. Casing & Formatting Rules
+
+*Applies to all kinds.*
 
 - **Acronyms uppercase:** `PKG`, `UI`, `UX`, `MSI`, `GPG`, `RPM`, `DEB`, `DMG`, `EXE`. Note: the catch-all category is `Misc` (capitalized first letter, not `MISC`) — it's not an acronym.
 - **Operating systems (canonical):** `macOS`, `Windows`, `Linux`, `iOS`, `Android`. Historical variants in older notes (`MacOS`) are non-conformant and SHOULD be migrated to `macOS`.
@@ -379,6 +421,8 @@ For releases requiring a manual download (key rotations, EOL transitions, etc.):
 
 ## 12. Framework Addendums
 
+*Kind `binary` rows are unchanged from `v1.0.0`. The Web / docs-site row is kind `web`.*
+
 The core spec is framework-agnostic. Stack-specific additions:
 
 | Stack | `.sig` para in §4 | MSI builds | Self-updater bullet | Legacy-binary bullet | Notes |
@@ -387,12 +431,14 @@ The core spec is framework-agnostic. Stack-specific additions:
 | Electron | Not used | Stable only (if shipped) | Yes — Electron auto-updater | Yes | Bump `Electron` category on version changes. |
 | Flutter (Dacx) | Not used | N/A | None (no self-updater) | Omit | Mention Flutter version moves under `Codebase`. Add stability disclaimer in §4 callout while pre-1.0. Dacx's older app-specific footer (`## Features` / `## Supported Platforms and Archs` / `## Codebase` / `## Info`) is **not** a substitute for §9 Release Info — those sections MAY appear *in addition*, but the canonical §9 footer MUST also be present. |
 | MS Store distribution (ROSI) | Inherit from underlying stack | Inherit | Inherit | Inherit | Add Store badge above downloads table. Note Microsoft-Store codesigning in Release Info. |
+| Web / docs-site | **Omit** | **Omit** | **Omit** | **Omit** | Kind `web` (§15). No Downloads table, no signing callout, **omit §9 Release Info**. Site chrome uses `UI` / `Codebase`; copy uses `Docs`. |
 
 ## 12.1 Images & Screenshots
 
-- Patch and minor releases SHOULD NOT include screenshots or GIFs in the changes section. Bullet text is enough.
+- Patch and minor **release** notes (`binary` / `web`) SHOULD NOT include screenshots or GIFs in the changes section. Bullet text is enough.
 - Major-release hero sections (§8.2) MAY include screenshots, GIFs, or short videos to illustrate the new direction.
-- Images MUST be hosted on GitHub (drag-and-drop into the release body) — never hot-link from external CDNs that could rot or rate-limit.
+- Kind `docs` pages MAY include images where they help (screenshots of the product, diagrams).
+- Images MUST be hosted on GitHub (drag-and-drop into the release body or repo) — never hot-link from external CDNs that could rot or rate-limit.
 - Provide alt text for accessibility.
 
 ## 12.2 Language
@@ -415,8 +461,13 @@ BCLS assumes English-language release notes. Translations MAY be appended in col
 - Don't reference issue numbers / PR numbers in the bullet text. Keep notes user-facing.
 - Don't write `MISC:` — the catch-all is `Misc:`.
 - Don't write `BETA build` — the beta callout is `Beta build`.
+- Don't put a Downloads table, signing callout, MSI note, or `## ℹ️ Release Info` on a kind `web` release (§15).
+- Don't write Conventional Commits (`feat:`, `fix:`) — commit kind uses BCLS categories (§16).
+- Don't use `- **Category:**` bullets as the primary outline of a README (§17).
 
 ## 14. Worked Mini-Example (Patch Release)
+
+*Kind `binary`. Kind `web` mini-example: §15.5.*
 
 ```markdown
 # ⬇️ Downloads
@@ -456,11 +507,156 @@ See the [full v4 changelog](https://github.com/BurntToasters/ROSI/blob/main/CHAN
 </details>
 ```
 
-See [`EXAMPLES/`](EXAMPLES/) for full annotated walkthroughs.
+See [`EXAMPLES/`](EXAMPLES/) for full annotated walkthroughs. §14 is kind `binary`; kind `web` has a mini-example in §15.
+
+## 15. Kind `web` — Website / source-only GitHub releases
+
+GitHub release bodies for projects that **do not ship binaries** (websites, docs sites, this spec's own site). Tagging (§1), `## Changes in` (§5), carry-forward (§6), beta callout shape (§7 minus MSI), major hero (§8.2), and tone (§10) still apply.
+
+There is **no** live-site Downloads replacement. A live URL MAY appear in the optional one-line intro as ordinary prose.
+
+### 15.1 Section order (MUST)
+
+1. *(beta only)* `> [!NOTE]` Beta build callout — **before** everything else, same text as §7.
+2. **Support link** (SHOULD) — same shape as §2 item 3.
+3. *(Optional)* one-line intro. A live URL MAY appear here. This is not a Downloads block.
+4. *(vN.0.x only)* hero copied unchanged from `vN.0.0` (§8.2.1).
+5. `## Changes in` + carry-forward (§5–§6).
+6. Full vN `<details>` when truncating (§6.1).
+7. *(Optional)* breaking-change callouts — **never** MSI.
+
+### 15.2 MUST NOT
+
+A kind `web` body MUST NOT contain:
+
+- `# ⬇️ Downloads` or an OS downloads table
+- `> [!IMPORTANT]` signing / arch / updater blocks (§4)
+- MSI placeholder rows or the MSI / enterprise callout (§8.1)
+- `## ℹ️ Release Info` (§9)
+
+### 15.3 Security / manual-update (web)
+
+Keep the title subtitle and the `### IMPORTANT: THIS IS A SECURITY UPDATE. UPDATE NOW!` banner inside `## Changes in` (§8.3). Tell users to **reload the site**. Do not tell them to download or run an installer.
+
+### 15.4 Beta `-beta.1` (web)
+
+Same Ver + PKG convention as §7. Do not mention MSI.
+
+### 15.5 Worked mini-example (web patch)
+
+```markdown
+### ℹ️ Enjoying BCLS? Consider [❤️ Supporting Me! ❤️](https://rosie.run/support)
+
+## Changes in `v1.1.0:`
+
+- **Docs:** Added kinds for commit subjects, documentation pages, and website releases.
+- **PKG:** Updated packages.
+
+## Changes in `v1.0.0:`
+
+- **Docs:** Initial public release of the spec.
+```
+
+See [`TEMPLATES/web-patch.md`](TEMPLATES/web-patch.md) and [`EXAMPLES/web-site-patch.md`](EXAMPLES/web-site-patch.md).
+
+## 16. Kind `commit` — Git commit subjects
+
+Commit **subjects** reuse the §5.4 category vocabulary. They are **not** Conventional Commits (`feat:`, `fix:` are non-conformant). They are **not** first-person release-note prose.
+
+A Copilot-facing copy of these rules lives in [`.github/copilot-instructions.md`](.github/copilot-instructions.md). If that file drifts from this section, **this section wins**.
+
+### 16.1 Shape (MUST)
+
+```
+<Category>: <Description>.
+```
+
+For a discrete new capability:
+
+```
+NEW - <Feature>: <Description>.
+```
+
+- **Category** is from §5.4 (including `Docs`).
+- Imperative present tense: `Add`, `Fix`, `Update`, `Remove`, `Refactor` — not "I added" and not "Added" as a past-tense changelog verb unless it still reads as a command ("Add fuzzy matching.").
+- Sentence case; the subject MUST end with `.`
+- Target ≤60 characters; MUST NOT exceed 72.
+- One logical change; do not list files.
+- No emojis, no Unicode em dashes (`—`), no `Co-authored-by` / `Signed-off-by` / other git trailers.
+- No issue or PR numbers unless they **are** the change.
+- GitHub Desktop: leave the description field empty unless the subject cannot capture the change.
+
+SHOULD NOT use `Misc` when a tighter category fits.
+
+### 16.2 Examples
+
+Conformant:
+
+```
+UI: Improve settings navigation.
+Security: Validate updater signatures.
+PKG: Update packages.
+Codebase: Remove obsolete migration logic.
+Docs: Document web release kind.
+NEW - Search: Add fuzzy result matching.
+```
+
+Non-conformant:
+
+```
+feat: add search
+Fix bug
+UI: Improve settings navigation
+Updated packages
+```
+
+## 17. Kind `docs` — README, CONTRIBUTING, docs-site pages
+
+Writing standard for **README**, **CONTRIBUTING**, and **docs-site pages**. This is not a second GitHub-release format. When a docs site ships a GitHub release, that body is kind `web` (§15).
+
+### 17.1 Voice
+
+- First-person casual for "what this is / why I built it" (§10).
+- **Imperative** for procedures ("Run `npm install`.").
+- No marketing fluff.
+- Do **not** use `- **Category:**` bullets as the primary README / docs outline. That grammar is for `## Changes in` (§5.3).
+
+### 17.2 README section order (SHOULD)
+
+1. Title (`#`) + one-line what-it-is
+2. Intro (first person)
+3. Install / Use
+4. *(Optional)* Configuration
+5. Support link (same shape as §2 item 3, or a plain link to https://rosie.run/support)
+6. CONTRIBUTING pointer
+7. License
+
+Changelog lives in GitHub Releases (or `CHANGELOG.md` for this spec repo). A README MUST NOT inline the full patch chain.
+
+### 17.3 CONTRIBUTING (SHOULD)
+
+1. Dev setup
+2. Commit kind (§16)
+3. Which release kind this repo uses (`binary` vs `web`)
+4. Project-specific notes
+
+Downstream MAY pin `BCLS v1.x`.
+
+### 17.4 Docs-site pages (SHOULD)
+
+- One topic per page.
+- Title + description in frontmatter.
+- Do not fork canonical facts. In **this** repo, root markdown (`STANDARD.md`, `AGENTS.md`, …) remains the source of truth; [`site/scripts/sync-content.mjs`](site/scripts/sync-content.mjs) copies them into generated pages.
+
+Images follow §12.1. Docs pages MAY include screenshots; patch/minor **release** notes still SHOULD NOT.
+
+See [`TEMPLATES/docs-readme.md`](TEMPLATES/docs-readme.md) and [`TEMPLATES/docs-contributing.md`](TEMPLATES/docs-contributing.md).
 
 ---
 
 ## Appendix A — Section Order Cheat Sheet
+
+### A.1 Kind `binary`
 
 ```
 # ⬇️ Downloads
@@ -495,3 +691,32 @@ See [`EXAMPLES/`](EXAMPLES/) for full annotated walkthroughs.
 - **Code Signing:** ...
 - **Legacy Binaries:** ...
 ```
+
+### A.2 Kind `web`
+
+```
+(beta only) > [!NOTE] 🅱️ This is a Beta build.
+
+### ℹ️ Enjoying <App>? Consider [❤️ Supporting Me! ❤️](https://rosie.run/support)
+
+(optional one-line intro; live URL MAY appear here as prose)
+(persistent hero block on vN.0.x patches — §8.2.1)
+
+## Changes in `vX.Y.Z:`
+- **Category:** ...
+
+## Changes in `vX.Y.(Z-1):`
+...
+## Changes in `vX.Y.0:`
+...
+## Changes in `vX.0.0:`
+...
+
+## Click below for the full `vN` Changelog   ← §6.1, when older patches are truncated
+<details>...</details>
+
+(optional breaking-change callouts — never MSI)
+
+(no Downloads, no signing callout, no Release Info)
+```
+
